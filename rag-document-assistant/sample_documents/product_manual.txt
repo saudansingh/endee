@@ -1,0 +1,261 @@
+Endee Vector Database - User Manual
+
+Version 1.0
+Last Updated: 2024
+
+Table of Contents
+1. Installation Guide
+2. Quick Start Tutorial
+3. API Reference
+4. Configuration Options
+5. Performance Tuning
+6. Troubleshooting
+
+1. Installation Guide
+
+System Requirements
+- Operating System: Linux (Ubuntu 18.04+), macOS (10.15+), Windows 10+
+- CPU: x86_64 with AVX2 support (recommended)
+- Memory: Minimum 4GB RAM, 8GB+ recommended for production
+- Storage: At least 10GB free space
+- Python: 3.8 or higher (for client applications)
+
+Installation Steps
+
+Step 1: Download Endee
+Download the latest release from the official GitHub repository:
+git clone https://github.com/endee-io/endee.git
+cd endee
+
+Step 2: Build from Source
+Run the installation script with appropriate optimizations:
+chmod +x ./install.sh ./run.sh
+./install.sh --release --avx2
+
+Step 3: Start the Server
+Launch the Endee server:
+./run.sh
+
+The server will start on port 8080 by default.
+
+2. Quick Start Tutorial
+
+Creating Your First Collection
+
+Open a new terminal and use the curl command to create a collection:
+
+curl -X POST http://localhost:8080/collections \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "my_documents",
+    "dimension": 384,
+    "metric": "cosine"
+  }'
+
+Inserting Vectors
+
+Prepare your vectors and metadata, then insert them:
+
+curl -X POST http://localhost:8080/collections/my_documents/insert \
+  -H "Content-Type: application/json" \
+  -d '{
+    "vectors": [
+      [0.1, 0.2, 0.3, 0.4],
+      [0.5, 0.6, 0.7, 0.8]
+    ],
+    "payloads": [
+      {"text": "First document", "category": "introduction"},
+      {"text": "Second document", "category": "tutorial"}
+    ]
+  }'
+
+Searching for Similar Vectors
+
+Perform a similarity search:
+
+curl -X POST http://localhost:8080/collections/my_documents/search \
+  -H "Content-Type: application/json" \
+  -d '{
+    "vector": [0.15, 0.25, 0.35, 0.45],
+    "limit": 5
+  }'
+
+3. API Reference
+
+Collection Management
+
+Create Collection
+POST /collections
+{
+  "name": string,
+  "dimension": integer,
+  "metric": "cosine" | "euclidean" | "dotproduct"
+}
+
+List Collections
+GET /collections
+
+Delete Collection
+DELETE /collections/{name}
+
+Vector Operations
+
+Insert Vectors
+POST /collections/{name}/insert
+{
+  "vectors": array<float[][]>,
+  "payloads": array<object>
+}
+
+Search Vectors
+POST /collections/{name}/search
+{
+  "vector": float[],
+  "limit": integer,
+  "filter": object (optional)
+}
+
+Update Vectors
+PUT /collections/{name}/update
+{
+  "ids": array<string>,
+  "vectors": array<float[]>,
+  "payloads": array<object>
+}
+
+Delete Vectors
+DELETE /collections/{name}/delete
+{
+  "ids": array<string>
+}
+
+4. Configuration Options
+
+Server Configuration
+
+Basic Settings
+- port: Server port (default: 8080)
+- host: Server host (default: localhost)
+- max_connections: Maximum concurrent connections
+- timeout: Request timeout in seconds
+
+Performance Tuning
+- cache_size: Memory cache size for vectors
+- index_threads: Number of indexing threads
+- search_threads: Number of search threads
+- batch_size: Default batch size for operations
+
+Memory Management
+- max_memory: Maximum memory usage
+- memory_limit: Hard memory limit
+- gc_interval: Garbage collection interval
+
+Advanced Configuration
+
+Indexing Options
+- index_type: HNSW, IVF, or FLAT
+- hnsw_m: HNSW connectivity parameter
+- hnsw_ef: HNSW search parameter
+- ivf_nlist: IVF number of clusters
+
+Logging Configuration
+- log_level: DEBUG, INFO, WARN, ERROR
+- log_file: Log file path
+- log_rotation: Log rotation settings
+
+5. Performance Tuning
+
+Optimization Guidelines
+
+CPU Optimization
+Enable CPU-specific optimizations for better performance:
+- AVX2: ./install.sh --avx2
+- AVX512: ./install.sh --avx512
+- NEON: ./install.sh --neon (ARM)
+
+Memory Optimization
+Configure appropriate memory settings:
+- Set cache_size to 50% of available RAM
+- Use memory-mapped storage for large datasets
+- Enable compression for stored vectors
+
+Index Optimization
+Choose the right index for your use case:
+- HNSW: Best for high recall with good performance
+- IVF: Good for large datasets with lower memory usage
+- FLAT: Exact search for small datasets
+
+Benchmarking
+
+Performance Metrics
+Monitor these key metrics:
+- QPS (Queries Per Second)
+- P95 Latency
+- Memory Usage
+- Disk I/O
+
+Load Testing
+Use the built-in benchmarking tool:
+./benchmark --collection test --vectors 1000000 --queries 10000
+
+6. Troubleshooting
+
+Common Issues
+
+Server Won't Start
+Symptoms: Server fails to start or crashes immediately
+Solutions:
+- Check if port 8080 is available
+- Verify system requirements are met
+- Check log files for error messages
+
+Slow Query Performance
+Symptoms: Queries take longer than expected
+Solutions:
+- Verify CPU optimizations are enabled
+- Check index configuration
+- Monitor memory usage
+- Consider increasing cache size
+
+High Memory Usage
+Symptoms: System runs out of memory
+Solutions:
+- Reduce cache_size configuration
+- Enable vector compression
+- Use IVF index instead of HNSW
+- Add more RAM to system
+
+Connection Issues
+Symptoms: Client cannot connect to server
+Solutions:
+- Verify server is running on correct port
+- Check firewall settings
+- Validate network connectivity
+- Review authentication configuration
+
+Debug Mode
+
+Enable debug logging for detailed troubleshooting:
+./run.sh --debug --log-level DEBUG
+
+Monitor real-time performance:
+curl http://localhost:8080/metrics
+
+Support Resources
+
+Documentation
+- Official docs: https://docs.endee.io
+- API reference: https://docs.endee.io/api
+- Tutorials: https://docs.endee.io/tutorials
+
+Community Support
+- Discord: https://discord.gg/endee
+- GitHub Issues: https://github.com/endee-io/endee/issues
+- Stack Overflow: Use tag [endee]
+
+Contact Support
+For enterprise support: enterprise@endee.io
+
+---
+
+This manual provides comprehensive guidance for using Endee Vector Database in production environments. For additional resources and updates, visit the official documentation website.

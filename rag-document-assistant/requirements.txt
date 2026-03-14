@@ -1,0 +1,7 @@
+endee
+sentence-transformers
+langchain-text-splitters
+streamlit
+PyPDF2
+python-docx
+striprtf
